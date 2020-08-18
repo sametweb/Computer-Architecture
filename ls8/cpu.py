@@ -26,7 +26,7 @@ class CPU:
         try:
             with open(filename) as f:
                 for line in f:
-                    line = line.split()
+                    line = line.split('#')
                     n = line[0].strip()
 
                     if n == '':
@@ -71,12 +71,12 @@ class CPU:
         else:
             raise Exception("Unsupported ALU operation")
 
-    def ram_read(self, pc):
-        return self.ram[pc]
+    def ram_read(self, MAR):
+        return self.ram[MAR]
 
-    def ram_write(self, address, value):
-        self.ram[address] = value
-        return self.ram[address]
+    def ram_write(self, MAR, MDR):
+        self.ram[MAR] = MDR
+        return self.ram[MAR]
 
     def trace(self):
         """
@@ -106,24 +106,24 @@ class CPU:
         while running:
 
             # FETCH
-            cmd = self.ram[self.pc]
+            cmd = self.ram_read(self.pc)
             op_size = (cmd >> 6) + 1
 
             # DECODE
             if self.cmds[cmd] == 'LDI':
                 # EXECUTE
-                reg_index = self.ram[self.pc + 1]
-                num = self.ram[self.pc + 2]
+                reg_index = self.ram_read(self.pc + 1)
+                num = self.ram_read(self.pc + 2)
                 self.reg[reg_index] = num
 
             elif self.cmds[cmd] == 'PRN':
-                reg_index = self.ram[self.pc + 1]
+                reg_index = self.ram_read(self.pc + 1)
                 num = self.reg[reg_index]
                 print(num)
 
             elif self.cmds[cmd] == 'MUL':
-                num1_index = self.ram[self.pc + 1]
-                num2_index = self.ram[self.pc + 2]
+                num1_index = self.ram_read(self.pc + 1)
+                num2_index = self.ram_read(self.pc + 2)
                 self.alu('MUL', num1_index, num2_index)
 
             elif self.cmds[cmd] == 'HLT':
